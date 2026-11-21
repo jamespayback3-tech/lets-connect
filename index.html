@@ -1,45 +1,111 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Let's Connect</title>
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#7c3aed">
+<title>Let's Connect 💬</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-body{background:#0a0a0a;color:#fff;font-family:Arial;padding:20px;text-align:center}
-.logo{width:90px;height:90px;background:#7c3aed;border-radius:25px;display:flex;align-items:center;justify-content:center;font-size:45px;margin:20px auto;position:relative}
-.kim{position:absolute;bottom:-5px;right:-5px;background:#a855f7;width:28px;height:28px;border-radius:50%;font-size:16px;display:flex;align-items:center;justify-content:center;border:2px solid #0a0a0a}
-input{width:100%;padding:14px;margin:8px 0;border-radius:10px;border:none;background:#222;color:#fff;box-sizing:border-box}
-.btn{width:100%;padding:15px;border:none;border-radius:12px;font-weight:800;margin-top:10px;cursor:pointer}
-.purple{background:#7c3aed;color:#fff}
-.outline{background:transparent;color:#a855f7;border:2px solid #7c3aed}
-#aiFab{position:fixed;bottom:20px;right:16px;width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;font-size:12px;font-weight:800;border:none;box-shadow:0 8px 20px rgba(124,58,237,.6);z-index:999}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif}
+body{background:linear-gradient(135deg,#6a11cb,#2575fc);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.card{background:#fff;width:100%;max-width:400px;border-radius:24px;padding:28px;box-shadow:0 20px 50px rgba(0,0,0,.3);text-align:center}
+.logo{font-size:50px}
+h1{font-size:28px;margin:5px 0}
+p.sub{color:#666;font-size:14px;margin-bottom:20px}
+input{width:100%;padding:14px;border:2px solid #eee;border-radius:12px;margin-bottom:12px;font-size:15px;outline:none}
+input:focus{border-color:#6a11cb}
+button{width:100%;padding:15px;border:none;border-radius:12px;background:linear-gradient(135deg,#6a11cb,#2575fc);color:#fff;font-size:16px;font-weight:700;cursor:pointer}
+button:disabled{opacity:.6}
+.link{margin-top:15px;font-size:14px;color:#6a11cb;cursor:pointer;font-weight:600}
+#msg{margin-top:12px;font-size:13px;min-height:18px}
+.success{color:green}.error{color:red}
+#dashboard{display:none}
+.avatar{width:70px;height:70px;background:linear-gradient(135deg,#6a11cb,#2575fc);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:30px;color:#fff;margin:0 auto 10px}
+.kim{position:fixed;bottom:20px;right:20px;background:#fff;border-radius:50px;padding:12px 18px;box-shadow:0 10px 30px rgba(0,0,0,.3);font-weight:700;cursor:pointer;z-index:10}
 </style>
 </head>
 <body>
-<div class="logo">💬<div class="kim">✨</div></div>
-<h1>Let's <span style="color:#a855f7">Connect</span></h1>
-<p style="color:#aaa">Chat, Connect, with Kim AI inside</p>
-<input placeholder="Email">
-<input placeholder="Choose Username">
-<input type="password" placeholder="Password">
-<button class="btn purple" onclick="alert('Day 2: We will connect this to Supabase!')">CREATE ACCOUNT</button>
-<button class="btn outline" onclick="alert('Day 2: Login will work!')">LOG IN</button>
-<button class="btn outline" id="installBtn" style="display:none">📲 INSTALL APP</button>
-<p style="color:#888;font-size:13px">Already have an account? Log in</p>
-<button id="aiFab" onclick="alert('Hi! I am Kim AI ✨ Day 7 I will be alive!')">✨<br>Kim AI</button>
+
+<div class="card" id="authCard">
+  <div class="logo">💬</div>
+  <h1>Let's Connect</h1>
+  <p class="sub" id="subtitle">Create your account to chat with Kim AI ✨</p>
+  <input id="email" type="email" placeholder="Email address">
+  <input id="username" type="text" placeholder="Username">
+  <input id="password" type="password" placeholder="Password">
+  <button id="mainBtn" onclick="handleAuth()">CREATE ACCOUNT</button>
+  <div class="link" id="toggleLink" onclick="toggleMode()">Already have an account? Login</div>
+  <div id="msg"></div>
+  <p style="font-size:11px;color:#999;margin-top:15px">Day 2 - Real Login with Supabase ✅</p>
+</div>
+
+<div class="card" id="dashboard">
+  <div class="avatar">👤</div>
+  <h1 id="welcomeText">Welcome!</h1>
+  <p class="sub" id="userEmail"></p>
+  <p style="background:#f0eaff;padding:15px;border-radius:12px;margin:15px 0">🎉 You are logged in!<br>Your account is saved in Supabase.<br><br>Day 3: We add Chat + Kim AI 💬</p>
+  <button onclick="logout()">LOG OUT</button>
+</div>
+
+<div class="kim" onclick="alert('✨ Hi! I am Kim AI. Day 3 I will start chatting with you!')">✨ Kim AI</div>
+
 <script>
-let deferredPrompt;
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault(); deferredPrompt = e;
-  document.getElementById('installBtn').style.display = 'block';
-});
-document.getElementById('installBtn').addEventListener('click', async () => {
-  if (deferredPrompt) { deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt = null; }
-  else { alert('On iPhone: Tap Share > Add to Home Screen'); }
+const SUPABASE_URL = "https://motykzvsyykvmjiycodg.supabase.co";
+const SUPABASE_KEY = "sb_publishable_wFlOJsS8BDe2NYFoUTQo_w_JTbvjqRn";
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let isLogin = false;
+function toggleMode(){
+  isLogin = !isLogin;
+  document.getElementById('mainBtn').innerText = isLogin ? "LOGIN" : "CREATE ACCOUNT";
+  document.getElementById('subtitle').innerText = isLogin ? "Welcome back! Login to continue" : "Create your account to chat with Kim AI ✨";
+  document.getElementById('toggleLink').innerText = isLogin ? "Don't have an account? Create one" : "Already have an account? Login";
+  document.getElementById('username').style.display = isLogin ? "none" : "block";
+  document.getElementById('msg').innerText = "";
+}
+async function handleAuth(){
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const username = document.getElementById('username').value.trim();
+  const msg = document.getElementById('msg');
+  const btn = document.getElementById('mainBtn');
+  if(!email || !password){ msg.className="error"; msg.innerText="Please fill email and password"; return; }
+  if(!isLogin && !username){ msg.className="error"; msg.innerText="Please enter username"; return; }
+  btn.disabled = true; btn.innerText = "Please wait...";
+  try{
+    if(isLogin){
+      const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+      if(error) throw error;
+      showDashboard(data.user, username);
+    } else {
+      const { data, error } = await supabaseClient.auth.signUp({ email, password, options:{ data:{ username } } });
+      if(error) throw error;
+      if(data.user && !data.session){
+        msg.className="success"; msg.innerText="Account created! Check your email to confirm, then Login.";
+      } else {
+        showDashboard(data.user, username);
+      }
+    }
+  } catch(e){
+    msg.className="error"; msg.innerText = e.message;
+  }
+  btn.disabled = false; btn.innerText = isLogin ? "LOGIN" : "CREATE ACCOUNT";
+}
+function showDashboard(user, username){
+  document.getElementById('authCard').style.display="none";
+  document.getElementById('dashboard').style.display="block";
+  const name = username || user.user_metadata?.username || user.email.split('@')[0];
+  document.getElementById('welcomeText').innerText = "Welcome, " + name + "!";
+  document.getElementById('userEmail').innerText = user.email;
+}
+async function logout(){
+  await supabaseClient.auth.signOut();
+  location.reload();
+}
+// Keep logged in if already logged in
+supabaseClient.auth.getSession().then(({data})=>{
+  if(data.session){ showDashboard(data.session.user, ""); }
 });
 </script>
 </body>
   </html>
-  
