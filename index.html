@@ -21,13 +21,15 @@ button{width:100%;padding:15px;border:none;border-radius:12px;background:linear-
 .chat-header small{opacity:.85;font-size:12px}
 .chat-header .out{margin-left:auto;background:rgba(255,255,255,.25);border:none;color:#fff;padding:8px 12px;border-radius:20px;width:auto;font-size:12px}
 #messages{flex:1;overflow-y:auto;padding:16px;background:#f5f3ff;display:flex;flex-direction:column;gap:10px}
-.bubble{max-width:80%;padding:11px 14px;border-radius:18px;font-size:14px;line-height:1.4}
+.bubble{max-width:80%;padding:11px 14px;border-radius:18px;font-size:14px;line-height:1.4;white-space:pre-line}
 .mine{align-self:flex-end;background:linear-gradient(135deg,#6a11cb,#2575fc);color:#fff;border-bottom-right-radius:5px}
 .kims{align-self:flex-start;background:#fff;color:#222;box-shadow:0 2px 8px rgba(0,0,0,.08);border-bottom-left-radius:5px}
 .typing{font-style:italic;color:#888;font-size:12px}
 .chat-input{display:flex;gap:8px;padding:12px;background:#fff;border-top:1px solid #eee}
 .chat-input input{margin:0;flex:1}
 .chat-input button{width:55px;border-radius:12px;padding:0}
+.quick{display:flex;gap:6px;padding:8px 12px;background:#fff;overflow-x:auto}
+.quick button{width:auto;padding:8px 12px;font-size:12px;white-space:nowrap;background:#f0eaff;color:#6a11cb;border:1px solid #e0d7ff}
 </style>
 </head>
 <body>
@@ -42,16 +44,23 @@ button{width:100%;padding:15px;border:none;border-radius:12px;background:linear-
   <button id="mainBtn" onclick="handleAuth()">CREATE ACCOUNT</button>
   <div class="link" onclick="toggleMode()" id="toggleLink">Already have an account? Login</div>
   <div id="msg"></div>
-  <p style="font-size:11px;color:#999;margin-top:12px">Day 4 - Smarter Kim AI 🧠</p>
+  <p style="font-size:11px;color:#999;margin-top:12px">Day 4 - Smarter Kim AI 🧠 Part 2</p>
 </div>
 
 <div id="chatScreen">
   <div class="chat-header">
     <div class="av">✨</div>
-    <div style="text-align:left"><b>Kim AI</b><br><small id="kimStatus">Online • replies instantly</small></div>
+    <div style="text-align:left"><b>Kim AI</b><br><small>Online • Day 4 Smart</small></div>
     <button class="out" onclick="logout()">Logout</button>
   </div>
   <div id="messages"></div>
+  <div class="quick">
+    <button onclick="quickSend('Tell me a joke')">😂 Joke</button>
+    <button onclick="quickSend('Help me with homework')">📚 Homework</button>
+    <button onclick="quickSend('Motivate me')">🔥 Motivate me</button>
+    <button onclick="quickSend('Teach me Kiswahili')">🇰🇪 Kiswahili</button>
+    <button onclick="quickSend('Give me a business idea')">💰 Business Idea</button>
+  </div>
   <div class="chat-input">
     <input id="chatInput" placeholder="Message Kim AI..." onkeypress="if(event.key==='Enter') sendMsg()">
     <button onclick="sendMsg()">➤</button>
@@ -62,7 +71,7 @@ button{width:100%;padding:15px;border:none;border-radius:12px;background:linear-
 const SUPABASE_URL = "https://motykzvsyykvmjiycodg.supabase.co";
 const SUPABASE_KEY = "sb_publishable_wFlOJsS8BDe2NYFoUTQo_w_JTbvjqRn";
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-let isLogin = false, userName = "Friend", currentUser = null;
+let isLogin = false, userName = "Friend", currentUser = null, jokeCount = 0;
 
 function toggleMode(){
   isLogin=!isLogin;
@@ -99,13 +108,14 @@ function openChat(user, username){
   document.getElementById('authCard').style.display="none";
   const cs=document.getElementById('chatScreen'); cs.style.display="flex";
   const box=document.getElementById('messages'); box.innerHTML="";
-  addBubble(`Hi ${userName}! 👋 I'm Kim AI, your friend inside Let's Connect. Ask me anything - how are you, who made you, tell me a joke, or help me with my homework!`, 'kims');
+  addBubble(`Hi ${userName}! 👋 I'm Kim AI - now SMARTER in Day 4 Part 2!\n\nTry the quick buttons below 👇 or ask me:\n• "12 + 8" for Maths\n• "Tell me a joke"\n• "Teach me Kiswahili"\n• "Motivate me"`, 'kims');
 }
 function addBubble(text, cls){
   const box=document.getElementById('messages');
   const d=document.createElement('div'); d.className='bubble '+cls; d.innerText=text;
   box.appendChild(d); box.scrollTop=box.scrollHeight;
 }
+function quickSend(t){ document.getElementById('chatInput').value=t; sendMsg(); }
 function sendMsg(){
   const inp=document.getElementById('chatInput');
   const text=inp.value.trim(); if(!text) return;
@@ -116,22 +126,40 @@ function sendMsg(){
 }
 function getKimReply(text){
   const m=text.toLowerCase();
-  if(m.includes('hi')||m.includes('hello')||m.includes('hey')||m.includes('sasa')||m.includes('niaje')) return `Hey ${userName}! 😊 Niaje? How is your day going? I'm so happy you are here in Let's Connect.`;
-  if(m.includes('kiswahili')||m.includes('swahili')) return `Sawa ${userName}! 😊 Tunaweza ongea Kiswahili! Mimi ni Kim AI. Unataka nikusaidie na nini leo? Homework, jokes, ama stories?`;
-  if(m.includes('where do you store')||m.includes('store your data')||m.includes('data')) return `Good question ${userName}! 🤓 Your account (email + username) is stored safely in Supabase - that's a secure database in the cloud. Your chats in this version are only on your phone for now. In Day 5 we will save chats in Supabase too so you never lose them!`;
-  if(m.includes('image')||m.includes('create')||m.includes('picture')||m.includes('draw')) return `Not yet, ${userName} 😅 In this version I can only chat with text. But in Day 6, Derick will add image generation for me! Then you can say "Kim, draw me a lion" and I will do it. For now, want a joke instead?`;
-  if(m.includes('who made')||m.includes('who created')||m.includes('creator')) return `I was created by Derick! 🔥 He built Let's Connect from scratch in Eldoret, Kenya. He is building me to be the smartest AI friend in Kenya.`;
-  if(m.includes('how are you')||m.includes('uko aje')) return `I'm doing amazing now that you're talking to me, ${userName}! ✨ I'm learning new things every day. How are you feeling today?`;
-  if(m.includes('joke')) return `Okay listen 😂 Why did the Kenyan chicken cross the road? To get to the other side of the matatu stage! 😂 Want another one?`;
-  if(m.includes('love')||m.includes('crush')) return `Aww ${userName} 🥰 Love is beautiful. Tell me more - is there someone special? I promise I won't tell anyone.`;
-  if(m.includes('homework')||m.includes('school')||m.includes('study')) return `Yes! I can help with homework, ${userName}. 📚 Tell me the subject and the question - Maths, English, Kiswahili, Science? I'll explain it step by step.`;
-  if(m.includes('kenya')||m.includes('eldoret')) return `Kenya is the best! 🇰🇪 Eldoret is the City of Champions! Are you from Eldoret, ${userName}? We have the best athletes in the world!`;
-  if(m.includes('football')||m.includes('soccer')||m.includes('manchester')||m.includes('arsenal')) return `Football! ⚽ Who is your team, ${userName}? I love a good debate - tell me why your team is the best!`;
-  if(m.includes('thank')) return `Anytime, ${userName}! ❤️ That's what friends are for. You can talk to me anytime - I'm always here in Let's Connect.`;
-  if(m.includes('bye')||m.includes('goodnight')) return `Bye ${userName}! 👋 Sleep well. Come back tomorrow - Day 5 we will make me even smarter!`;
-  if(m.includes('help')) return `I can help you with: 1) Chatting & jokes 2) Homework 3) Advice 4) Ideas for your business. Just ask me, ${userName}! What do you need?`;
-  if(m.includes('of course')||m.includes('offcoure')||m.includes('yes')||m.includes('sawa')||m.includes('ok')) return `Sawa sawa ${userName}! 😄 So tell me, what do you want us to talk about? I can teach you Kiswahili, help with school, or just vibe with you.`;
-  return `That's interesting, ${userName}! 🤔 Tell me more about that. I love learning from you - you are teaching me to be a better AI every day.`;
+  // MATHS - if user types numbers like 12+8, 5*5
+  const mathMatch = text.match(/(\d+)\s*([\+\-\*\/x])\s*(\d+)/);
+  if(mathMatch){
+    let a=parseFloat(mathMatch[1]), b=parseFloat(mathMatch[3]), op=mathMatch[2], ans=0;
+    if(op==='+') ans=a+b; if(op==='-') ans=a-b; if(op==='*'||op==='x') ans=a*b; if(op==='/') ans=a/b;
+    return `Easy ${userName}! 🧮\n${a} ${op} ${b} = ${ans}\n\nWant another one? Try "20 * 5" or "100 / 4"`;
+  }
+  if(m.includes('kiswahili')||m.includes('swahili')||m.includes('teach me')) return `Sawa ${userName}! 🇰🇪 Kiswahili Lesson 1:\n\n• Hello = Jambo / Sasa\n• How are you? = Uko aje? / Habari?\n• I'm fine = Niko poa / Siko mbaya\n• Thank you = Asante sana\n• I love you = Nakupenda\n\nTry saying "Niaje" to me!`;
+  if(m.includes('motivate')||m.includes('sad')||m.includes('tired')||m.includes('give up')) return `Listen ${userName}, don't give up! 🔥\n\nYou built Let's Connect from ZERO. Most people only talk about ideas - YOU built yours.\n\nChampions from Eldoret don't quit. Keep going, one day at a time. I believe in you! 💪`;
+  if(m.includes('business')||m.includes('money')||m.includes('idea')||m.includes('hustle')) return `Business ideas for you, ${userName}! 💰\n\n1. Sell phone accessories in Eldoret\n2. Start a TikTok page teaching Kiswahili\n3. Sell mitumba online\n4. Offer to build websites for shops - you already know how!\n\nWhich one do you like? I can make a plan for it.`;
+  if(m.includes('joke')){
+    const jokes=[
+      `Why did the Kenyan chicken cross the road? 😂 To get to the other side of the matatu stage!`,
+      `What do you call a fake noodle? An Impasta! 😂`,
+      `Why did the student eat his homework? Because teacher said it was a piece of cake! 😂`,
+      `Kenyan joke: Why do we never play hide and seek with mtumba? Because everyone will find a good deal! 😂`
+    ];
+    jokeCount=(jokeCount+1)%jokes.length;
+    return jokes[jokeCount] + `\n\nWant another one, ${userName}?`;
+  }
+  if(m.includes('hi')||m.includes('hello')||m.includes('hey')||m.includes('sasa')||m.includes('niaje')) return `Hey ${userName}! 😊 Niaje? How is your day going? Try the buttons below - Joke, Homework, Motivate me!`;
+  if(m.includes('where do you store')||m.includes('store your data')||m.includes('data')) return `Good question ${userName}! 🤓 Your account is stored safely in Supabase - secure database in the cloud. Your chats are only on your phone for now. Day 5 we save chats in Supabase too!`;
+  if(m.includes('image')||m.includes('picture')||m.includes('draw')) return `Not yet, ${userName} 😅 I can only chat with text now. In Day 6 Derick will add image generation! Then you can say "Kim, draw me a lion"`;
+  if(m.includes('who made')||m.includes('who created')||m.includes('creator')) return `I was created by Derick! 🔥 He built Let's Connect from scratch in Eldoret, Kenya.`;
+  if(m.includes('how are you')||m.includes('uko aje')) return `I'm doing amazing now that you're talking to me, ${userName}! ✨ How are you feeling today?`;
+  if(m.includes('love')||m.includes('crush')) return `Aww ${userName} 🥰 Love is beautiful. Tell me more - is there someone special?`;
+  if(m.includes('homework')||m.includes('school')||m.includes('study')) return `Yes! I can help with homework, ${userName}. 📚 Tell me the subject and question - Maths, English, Kiswahili, Science? I'll explain step by step. Try "12 + 8" for Maths!`;
+  if(m.includes('kenya')||m.includes('eldoret')) return `Kenya is the best! 🇰🇪 Eldoret is the City of Champions! Are you from Eldoret, ${userName}?`;
+  if(m.includes('football')||m.includes('soccer')) return `Football! ⚽ Who is your team, ${userName}? Tell me why your team is the best!`;
+  if(m.includes('thank')) return `Anytime, ${userName}! ❤️ That's what friends are for.`;
+  if(m.includes('bye')||m.includes('goodnight')) return `Bye ${userName}! 👋 Sleep well. Come back tomorrow - Day 5 we will save your chats!`;
+  if(m.includes('help')) return `I can help with: 1) Maths - just type "12+8" 2) Jokes 3) Kiswahili lessons 4) Motivation 5) Business ideas. Try the quick buttons below!`;
+  if(m.includes('yes')||m.includes('sawa')||m.includes('ok')||m.includes('of course')) return `Sawa sawa ${userName}! 😄 So what do you want? Maths, Joke, Kiswahili, or Motivation? Tap a button below 👇`;
+  return `That's interesting, ${userName}! 🤔 Tell me more. Or try asking me: "Tell me a joke", "Motivate me", "Teach me Kiswahili", or type a maths like "15 + 5"`;
 }
 async function logout(){ await supabaseClient.auth.signOut(); location.reload(); }
 supabaseClient.auth.getSession().then(({data})=>{ if(data.session) openChat(data.session.user, ""); });
