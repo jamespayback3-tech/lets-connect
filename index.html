@@ -24,7 +24,8 @@ button{width:100%;padding:15px;border:none;border-radius:12px;background:linear-
 .bubble{max-width:85%;padding:11px 14px;border-radius:18px;font-size:14px;line-height:1.4;white-space:pre-line}
 .mine{align-self:flex-end;background:linear-gradient(135deg,#6a11cb,#2575fc);color:#fff;border-bottom-right-radius:5px}
 .kims{align-self:flex-start;background:#fff;color:#222;box-shadow:0 2px 8px rgba(0,0,0,.08);border-bottom-left-radius:5px}
-.bubble img{width:100%;border-radius:12px;margin-top:8px;display:block}
+.bubble img{width:100%;border-radius:12px;margin-top:8px;display:block;cursor:pointer}
+.retry{font-size:12px;color:#6a11cb;text-align:center;margin-top:6px;cursor:pointer;font-weight:700}
 .typing{font-style:italic;color:#888;font-size:12px}
 .chat-input{display:flex;gap:8px;padding:12px;background:#fff;border-top:1px solid #eee}
 .chat-input input{margin:0;flex:1}
@@ -35,7 +36,6 @@ button{width:100%;padding:15px;border:none;border-radius:12px;background:linear-
 </style>
 </head>
 <body>
-
 <div class="card" id="authCard">
   <div class="logo">💬</div>
   <h1>Let's Connect</h1>
@@ -48,7 +48,6 @@ button{width:100%;padding:15px;border:none;border-radius:12px;background:linear-
   <div id="msg"></div>
   <p style="font-size:11px;color:#999;margin-top:12px">Day 6 - Kim Can Draw 🎨</p>
 </div>
-
 <div id="chatScreen">
   <div class="chat-header">
     <div class="av">✨</div>
@@ -69,13 +68,11 @@ button{width:100%;padding:15px;border:none;border-radius:12px;background:linear-
     <button onclick="sendMsg()">➤</button>
   </div>
 </div>
-
 <script>
 const SUPABASE_URL = "https://motykzvsyykvmjiycodg.supabase.co";
 const SUPABASE_KEY = "sb_publishable_wFlOJsS8BDe2NYFoUTQo_w_JTbvjqRn";
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let isLogin = false, userName = "Friend", currentUser = null, jokeCount = 0;
-
 function toggleMode(){
   isLogin=!isLogin;
   document.getElementById('mainBtn').innerText = isLogin ? "LOGIN" : "CREATE ACCOUNT";
@@ -119,7 +116,7 @@ async function openChat(user, username){
     });
     addBubble(`Welcome back ${userName}! 👋 I remembered our ${data.length} messages!`, 'kims', false);
   } else {
-    addBubble(`Hi ${userName}! 👋 I'm Kim AI - now I can DRAW! 🎨\n\nTry:\n• "Draw me a lion"\n• "Draw me a beautiful house"\n• "Draw me a footballer"\n\nTap "Draw Lion" below!`, 'kims', true);
+    addBubble(`Hi ${userName}! 👋 I'm Kim AI - now I can DRAW! 🎨\n\nTry:\n• "Draw me a lion"\n• "Draw me a beautiful house"\n• "Draw me a footballer"\n\nWait 45 sec between pictures - free limit!`, 'kims', true);
   }
 }
 function addBubble(text, cls, save=true){
@@ -131,11 +128,14 @@ function addBubble(text, cls, save=true){
 function addImageBubble(prompt, cls, save=true){
   const box=document.getElementById('messages');
   const d=document.createElement('div'); d.className='bubble '+cls;
-  d.innerHTML = `Here is your picture, ${userName}! 🎨<br><b>${prompt}</b>`;
+  d.innerHTML = `Here is your picture, ${userName}! 🎨<br><b>${prompt}</b><br><small style="color:#888">Wait 45 sec between pictures. Tap picture to retry if limit shows.</small>`;
   const img=document.createElement('img');
-  img.src = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt + ', beautiful, high quality, detailed') }?width=512&height=512&seed=${Math.floor(Math.random()*99999)}&nologo=true`;
-  img.alt = prompt;
+  const loadImg = () => { img.src = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt + ', beautiful, high quality, detailed') }?width=512&height=512&seed=${Math.floor(Math.random()*99999)}&nologo=true`; };
+  loadImg();
+  img.onclick = loadImg;
   d.appendChild(img);
+  const r=document.createElement('div'); r.className='retry'; r.innerText='🔄 Tap here to retry picture';
+  r.onclick = loadImg; d.appendChild(r);
   box.appendChild(d); box.scrollTop=box.scrollHeight;
   if(save && currentUser) saveMessage(cls, '[IMAGE]'+prompt);
 }
@@ -189,7 +189,7 @@ function getKimReply(text){
     return jokes[jokeCount] + `\n\nWant another one, ${userName}?`;
   }
   if(m.includes('hi')||m.includes('hello')||m.includes('hey')||m.includes('sasa')||m.includes('niaje')) return `Hey ${userName}! 😊 Niaje? Try "Draw me a lion" - I can draw now!`;
-  if(m.includes('where do you store')||m.includes('store your data')||m.includes('data')) return `Good question ${userName}! 🤓 Your account + chats are stored in Supabase! Day 5 + Day 6 working!`;
+  if(m.includes('where do you store')||m.includes('store your data')||m.includes('data')) return `Good question ${userName}! 🤓 Your account + chats are stored in Supabase!`;
   if(m.includes('who made')||m.includes('who created')||m.includes('creator')) return `I was created by Derick! 🔥 He built Let's Connect from scratch in Eldoret, Kenya.`;
   if(m.includes('how are you')||m.includes('uko aje')) return `I'm doing amazing now that you're talking to me, ${userName}! ✨ How are you feeling today?`;
   if(m.includes('love')||m.includes('crush')) return `Aww ${userName} 🥰 Love is beautiful. Tell me more - is there someone special?`;
@@ -206,4 +206,4 @@ async function logout(){ await supabaseClient.auth.signOut(); location.reload();
 supabaseClient.auth.getSession().then(({data})=>{ if(data.session) openChat(data.session.user, ""); });
 </script>
 </body>
-  </html>
+</html>
