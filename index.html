@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Let's Connect</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#7c3aed">
+<style>
+body{background:#0a0a0a;color:#fff;font-family:Arial;padding:20px;text-align:center}
+.logo{width:90px;height:90px;background:#7c3aed;border-radius:25px;display:flex;align-items:center;justify-content:center;font-size:45px;margin:20px auto;position:relative}
+.kim{position:absolute;bottom:-5px;right:-5px;background:#a855f7;width:28px;height:28px;border-radius:50%;font-size:16px;display:flex;align-items:center;justify-content:center;border:2px solid #0a0a0a}
+input{width:100%;padding:14px;margin:8px 0;border-radius:10px;border:none;background:#222;color:#fff;box-sizing:border-box}
+.btn{width:100%;padding:15px;border:none;border-radius:12px;font-weight:800;margin-top:10px;cursor:pointer}
+.purple{background:#7c3aed;color:#fff}
+.outline{background:transparent;color:#a855f7;border:2px solid #7c3aed}
+#aiFab{position:fixed;bottom:20px;right:16px;width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;font-size:12px;font-weight:800;border:none;box-shadow:0 8px 20px rgba(124,58,237,.6);z-index:999}
+</style>
+</head>
+<body>
+<div class="logo">💬<div class="kim">✨</div></div>
+<h1>Let's <span style="color:#a855f7">Connect</span></h1>
+<p style="color:#aaa">Chat, Connect, with Kim AI inside</p>
+<input placeholder="Email">
+<input placeholder="Choose Username">
+<input type="password" placeholder="Password">
+<button class="btn purple" onclick="alert('Day 2: We will connect this to Supabase!')">CREATE ACCOUNT</button>
+<button class="btn outline" onclick="alert('Day 2: Login will work!')">LOG IN</button>
+<button class="btn outline" id="installBtn" style="display:none">📲 INSTALL APP</button>
+<p style="color:#888;font-size:13px">Already have an account? Log in</p>
+<button id="aiFab" onclick="alert('Hi! I am Kim AI ✨ Day 7 I will be alive!')">✨<br>Kim AI</button>
+<script>
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault(); deferredPrompt = e;
+  document.getElementById('installBtn').style.display = 'block';
+});
+document.getElementById('installBtn').addEventListener('click', async () => {
+  if (deferredPrompt) { deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt = null; }
+  else { alert('On iPhone: Tap Share > Add to Home Screen'); }
+});
+</script>
+</body>
+  </html>
