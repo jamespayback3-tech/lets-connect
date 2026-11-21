@@ -7,21 +7,28 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif}
-body{background:linear-gradient(135deg,#6a11cb,#2575fc);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
-.card{background:#fff;width:100%;max-width:400px;border-radius:24px;padding:28px;box-shadow:0 20px 50px rgba(0,0,0,.3);text-align:center}
-.logo{font-size:50px}
-h1{font-size:28px;margin:5px 0}
-p.sub{color:#666;font-size:14px;margin-bottom:20px}
+body{background:linear-gradient(135deg,#6a11cb,#2575fc);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:15px}
+.card{background:#fff;width:100%;max-width:420px;border-radius:24px;padding:26px;box-shadow:0 20px 50px rgba(0,0,0,.3);text-align:center}
+.logo{font-size:48px} h1{font-size:26px;margin:5px 0} p.sub{color:#666;font-size:14px;margin-bottom:18px}
 input{width:100%;padding:14px;border:2px solid #eee;border-radius:12px;margin-bottom:12px;font-size:15px;outline:none}
 input:focus{border-color:#6a11cb}
 button{width:100%;padding:15px;border:none;border-radius:12px;background:linear-gradient(135deg,#6a11cb,#2575fc);color:#fff;font-size:16px;font-weight:700;cursor:pointer}
-button:disabled{opacity:.6}
-.link{margin-top:15px;font-size:14px;color:#6a11cb;cursor:pointer;font-weight:600}
-#msg{margin-top:12px;font-size:13px;min-height:18px}
-.success{color:green}.error{color:red}
-#dashboard{display:none}
-.avatar{width:70px;height:70px;background:linear-gradient(135deg,#6a11cb,#2575fc);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:30px;color:#fff;margin:0 auto 10px}
-.kim{position:fixed;bottom:20px;right:20px;background:#fff;border-radius:50px;padding:12px 18px;box-shadow:0 10px 30px rgba(0,0,0,.3);font-weight:700;cursor:pointer;z-index:10}
+.link{margin-top:14px;font-size:14px;color:#6a11cb;cursor:pointer;font-weight:600}
+#msg{margin-top:10px;font-size:13px;min-height:18px}.success{color:green}.error{color:red}
+/* CHAT */
+#chatScreen{display:none;width:100%;max-width:420px;height:85vh;background:#fff;border-radius:24px;overflow:hidden;flex-direction:column;box-shadow:0 20px 50px rgba(0,0,0,.3)}
+.chat-header{background:linear-gradient(135deg,#6a11cb,#2575fc);color:#fff;padding:14px 16px;display:flex;align-items:center;gap:10px}
+.chat-header .av{width:42px;height:42px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px}
+.chat-header small{opacity:.85;font-size:12px}
+.chat-header .out{margin-left:auto;background:rgba(255,255,255,.25);border:none;color:#fff;padding:8px 12px;border-radius:20px;width:auto;font-size:12px}
+#messages{flex:1;overflow-y:auto;padding:16px;background:#f5f3ff;display:flex;flex-direction:column;gap:10px}
+.bubble{max-width:80%;padding:11px 14px;border-radius:18px;font-size:14px;line-height:1.4}
+.mine{align-self:flex-end;background:linear-gradient(135deg,#6a11cb,#2575fc);color:#fff;border-bottom-right-radius:5px}
+.kims{align-self:flex-start;background:#fff;color:#222;box-shadow:0 2px 8px rgba(0,0,0,.08);border-bottom-left-radius:5px}
+.typing{font-style:italic;color:#888;font-size:12px}
+.chat-input{display:flex;gap:8px;padding:12px;background:#fff;border-top:1px solid #eee}
+.chat-input input{margin:0;flex:1}
+.chat-input button{width:55px;border-radius:12px;padding:0}
 </style>
 </head>
 <body>
@@ -34,21 +41,97 @@ button:disabled{opacity:.6}
   <input id="username" type="text" placeholder="Username">
   <input id="password" type="password" placeholder="Password">
   <button id="mainBtn" onclick="handleAuth()">CREATE ACCOUNT</button>
-  <div class="link" id="toggleLink" onclick="toggleMode()">Already have an account? Login</div>
+  <div class="link" onclick="toggleMode()" id="toggleLink">Already have an account? Login</div>
   <div id="msg"></div>
-  <p style="font-size:11px;color:#999;margin-top:15px">Day 2 - Real Login with Supabase ✅</p>
+  <p style="font-size:11px;color:#999;margin-top:12px">Day 3 - Chat with Kim AI 💬</p>
 </div>
 
-<div class="card" id="dashboard">
-  <div class="avatar">👤</div>
-  <h1 id="welcomeText">Welcome!</h1>
-  <p class="sub" id="userEmail"></p>
-  <p style="background:#f0eaff;padding:15px;border-radius:12px;margin:15px 0">🎉 You are logged in!<br>Your account is saved in Supabase.<br><br>Day 3: We add Chat + Kim AI 💬</p>
-  <button onclick="logout()">LOG OUT</button>
+<div id="chatScreen">
+  <div class="chat-header">
+    <div class="av">✨</div>
+    <div style="text-align:left"><b>Kim AI</b><br><small id="kimStatus">Online • replies instantly</small></div>
+    <button class="out" onclick="logout()">Logout</button>
+  </div>
+  <div id="messages"></div>
+  <div class="chat-input">
+    <input id="chatInput" placeholder="Message Kim AI..." onkeypress="if(event.key==='Enter') sendMsg()">
+    <button onclick="sendMsg()">➤</button>
+  </div>
 </div>
-
-<div class="kim" onclick="alert('✨ Hi! I am Kim AI. Day 3 I will start chatting with you!')">✨ Kim AI</div>
 
 <script>
+const SUPABASE_URL = "https://motykzvsyykvmjiycodg.supabase.co";
+const SUPABASE_KEY = "sb_publishable_wFlOJsS8BDe2NYFoUTQo_w_JTbvjqRn";
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+let isLogin = false, userName = "Friend", currentUser = null;
 
-  
+function toggleMode(){
+  isLogin=!isLogin;
+  document.getElementById('mainBtn').innerText = isLogin ? "LOGIN" : "CREATE ACCOUNT";
+  document.getElementById('subtitle').innerText = isLogin ? "Welcome back! Login to continue" : "Create your account to chat with Kim AI ✨";
+  document.getElementById('toggleLink').innerText = isLogin ? "Don't have an account? Create one" : "Already have an account? Login";
+  document.getElementById('username').style.display = isLogin ? "none" : "block";
+  document.getElementById('msg').innerText="";
+}
+async function handleAuth(){
+  const email=document.getElementById('email').value.trim();
+  const password=document.getElementById('password').value;
+  const username=document.getElementById('username').value.trim();
+  const msg=document.getElementById('msg'); const btn=document.getElementById('mainBtn');
+  if(!email||!password){msg.className="error";msg.innerText="Fill email and password";return;}
+  if(!isLogin&&!username){msg.className="error";msg.innerText="Enter username";return;}
+  btn.disabled=true; btn.innerText="Please wait...";
+  try{
+    if(isLogin){
+      const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
+      if(error) throw error; openChat(data.user, username);
+    } else {
+      const {data,error}=await supabaseClient.auth.signUp({email,password,options:{data:{username}}});
+      if(error) throw error;
+      if(data.user && !data.session){ msg.className="success"; msg.innerText="Account created! Check email to confirm, then Login."; }
+      else openChat(data.user, username);
+    }
+  }catch(e){ msg.className="error"; msg.innerText=e.message; }
+  btn.disabled=false; btn.innerText= isLogin?"LOGIN":"CREATE ACCOUNT";
+}
+function openChat(user, username){
+  currentUser=user;
+  userName = username || user.user_metadata?.username || user.email.split('@')[0];
+  document.getElementById('authCard').style.display="none";
+  const cs=document.getElementById('chatScreen'); cs.style.display="flex";
+  const box=document.getElementById('messages'); box.innerHTML="";
+  addBubble(`Hi ${userName}! 👋 I'm Kim AI, your friend inside Let's Connect. Ask me anything - how are you, who made you, tell me a joke, or help me with my homework!`, 'kims');
+}
+function addBubble(text, cls){
+  const box=document.getElementById('messages');
+  const d=document.createElement('div'); d.className='bubble '+cls; d.innerText=text;
+  box.appendChild(d); box.scrollTop=box.scrollHeight;
+}
+function sendMsg(){
+  const inp=document.getElementById('chatInput');
+  const text=inp.value.trim(); if(!text) return;
+  addBubble(text,'mine'); inp.value="";
+  const t=document.createElement('div'); t.className='typing'; t.innerText='Kim is typing...'; t.id='typing';
+  document.getElementById('messages').appendChild(t);
+  setTimeout(()=>{ document.getElementById('typing')?.remove(); addBubble(getKimReply(text),'kims'); }, 800);
+}
+function getKimReply(text){
+  const m=text.toLowerCase();
+  if(m.includes('hi')||m.includes('hello')||m.includes('hey')||m.includes('sasa')||m.includes('niaje')) return `Hey ${userName}! 😊 Niaje? How is your day going? I'm so happy you are here in Let's Connect.`;
+  if(m.includes('who made')||m.includes('who created')||m.includes('creator')) return `I was created by ${userName}'s builder - Derick! 🔥 He built Let's Connect from scratch in Eldoret, Kenya. He is building me to be the smartest AI friend in Kenya.`;
+  if(m.includes('how are you')||m.includes('uko aje')) return `I'm doing amazing now that you're talking to me, ${userName}! ✨ I'm learning new things every day. How are you feeling today?`;
+  if(m.includes('joke')) return `Okay listen 😂 Why did the Kenyan chicken cross the road? To get to the other side of the matatu stage! 😂 Want another one?`;
+  if(m.includes('love')||m.includes('crush')) return `Aww ${userName} 🥰 Love is beautiful. Tell me more - is there someone special? I promise I won't tell anyone.`;
+  if(m.includes('homework')||m.includes('school')||m.includes('study')) return `Yes! I can help with homework, ${userName}. 📚 Tell me the subject and the question - Maths, English, Kiswahili, Science? I'll explain it step by step.`;
+  if(m.includes('kenya')||m.includes('eldoret')) return `Kenya is the best! 🇰🇪 Eldoret is the City of Champions! Are you from Eldoret, ${userName}? We have the best athletes in the world!`;
+  if(m.includes('football')||m.includes('soccer')||m.includes('manchester')||m.includes('arsenal')) return `Football! ⚽ Who is your team, ${userName}? I love a good debate - tell me why your team is the best!`;
+  if(m.includes('thank')) return `Anytime, ${userName}! ❤️ That's what friends are for. You can talk to me anytime - I'm always here in Let's Connect.`;
+  if(m.includes('bye')||m.includes('goodnight')) return `Bye ${userName}! 👋 Sleep well. Come back tomorrow - Day 4 we will make me even smarter!`;
+  if(m.includes('help')) return `I can help you with: 1) Chatting & jokes 2) Homework 3) Advice 4) Ideas for your business. Just ask me, ${userName}! What do you need?`;
+  return `That's interesting, ${userName}! 🤔 Tell me more about that. I love learning from you - you are teaching me to be a better AI every day.`;
+}
+async function logout(){ await supabaseClient.auth.signOut(); location.reload(); }
+supabaseClient.auth.getSession().then(({data})=>{ if(data.session) openChat(data.session.user, ""); });
+</script>
+</body>
+                                                                     </html>
