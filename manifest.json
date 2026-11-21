@@ -1,0 +1,16 @@
+{
+  "name": "Let's Connect",
+  "short_name": "Let's Connect",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#7c3aed",
+  "description": "Connect, Chat with Kim AI inside",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/1380/1380370.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+    }
