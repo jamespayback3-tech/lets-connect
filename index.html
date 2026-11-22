@@ -1,1 +1,113 @@
-
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Let's Connect 💬</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--p:#7c3aed;--p2:#a855f7;--bg:#fff;--bg2:#fafafa;--card:#fff;--tx:#262626;--sub:#737373;--bd:#dbdbdb;--in:#efefef}
+body.dark{--bg:#0f0a1e;--bg2:#171129;--card:#1a1033;--tx:#fff;--sub:#a1a1aa;--bd:#2e2a4a;--in:#241c3f}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif}
+body{background:var(--bg2);display:flex;justify-content:center;min-height:100vh}
+.card{background:var(--card);width:100%;max-width:420px;min-height:100vh;padding:28px;text-align:center;display:flex;flex-direction:column;justify-content:center;border:1px solid var(--bd);position:relative}
+@media(min-width:500px){.card{min-height:auto;border-radius:16px}}
+.logo{font-size:34px;font-weight:900;background:linear-gradient(45deg,#7c3aed,#a855f7,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+input{width:100%;padding:13px;background:var(--in);border:1px solid var(--bd);border-radius:10px;margin-bottom:8px;outline:none;color:var(--tx);font-size:14px}
+button{width:100%;padding:12px;border:none;border-radius:10px;background:var(--p);color:#fff;font-weight:700;cursor:pointer;margin-top:6px}
+.link{margin-top:14px;font-size:13px;color:var(--p);cursor:pointer;font-weight:600}
+#msg{font-size:13px;min-height:18px}.error{color:#ef4444}.success{color:#22c55e}
+.tbtn{position:absolute;top:14px;right:14px;width:42px!important;height:42px;border-radius:50%!important;background:var(--in)!important;color:var(--tx)!important;padding:0!important}
+#app{display:none;width:100%;max-width:420px;height:100vh;background:var(--bg);flex-direction:column;overflow:hidden;position:relative}
+@media(min-width:500px){#app{height:92vh;border:1px solid var(--bd);border-radius:16px}}
+.top{background:var(--card);padding:10px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--bd)}
+.top b{color:var(--tx)} .top small{color:var(--sub);font-size:11px}
+.ava{width:40px;height:40px;border-radius:50%;background:linear-gradient(45deg,#7c3aed,#a855f7);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+.icon{width:38px;height:38px;border-radius:50%;background:var(--in);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.screen{flex:1;overflow-y:auto;display:none;padding:12px;background:var(--bg2)} .screen.active{display:block}
+.item{display:flex;gap:12px;padding:10px;background:var(--card);border-radius:14px;margin-bottom:8px;cursor:pointer;border:1px solid var(--bd);align-items:center}
+.item b{color:var(--tx);font-size:14px}.item p{color:var(--sub);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bubble{max-width:80%;padding:9px 12px;border-radius:18px;font-size:14.5px;line-height:1.4;white-space:pre-line;margin-bottom:8px}
+.mine{margin-left:auto;background:var(--p);color:#fff;border-bottom-right-radius:5px}
+.kims{background:var(--card);color:var(--tx);border:1px solid var(--bd);border-bottom-left-radius:5px}
+.ci{display:flex;gap:8px;padding:8px 10px;background:var(--card);border-top:1px solid var(--bd)}
+.iw{flex:1;background:var(--in);border-radius:22px;display:flex;align-items:center;padding:0 6px 0 14px}.iw input{border:none;margin:0;background:transparent}
+.send{width:44px!important;height:44px;border-radius:50%!important;padding:0!important}
+.nav{display:flex;justify-content:space-around;padding:10px 0;background:var(--card);border-top:1px solid var(--bd)}
+.ni{text-align:center;cursor:pointer;color:var(--sub);font-size:11px}.ni.active{color:var(--p)}.ni div{font-size:22px}
+.fab{position:absolute;right:14px;bottom:78px;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#c084fc);color:#fff;font-size:26px;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:50;border:2px solid #fff}
+</style></head><body>
+<div class="card" id="authCard">
+<button class="tbtn" onclick="toggleTheme()">🌙</button>
+<div style="font-size:50px">💬</div><div class="logo">Let's Connect</div>
+<p style="color:var(--sub);font-size:13px;margin:6px 0 20px" id="subtitle">Create your account to chat with Kim AI ✨</p>
+<input id="email" type="email" placeholder="Email address"><input id="username" placeholder="Username"><input id="password" type="password" placeholder="Password">
+<button id="mainBtn" onclick="handleAuth()">CREATE ACCOUNT</button>
+<div class="link" onclick="toggleMode()" id="toggleLink">Already have an account? Login</div><div id="msg"></div>
+<p style="font-size:11px;color:var(--sub);margin-top:16px">Day 6 + 7 - FIXED ✅</p></div>
+<div id="app">
+<div class="top"><div class="ava" onclick="show('profile')"><span id="topAv">💬</span></div><div style="flex:1;text-align:left"><b>Let's Connect</b><br><small>Online • Real-Time</small></div><div class="icon" onclick="show('notifications')">🔔</div><div class="icon" onclick="toggleTheme()">🌙</div><div class="icon" onclick="logout()">↪️</div></div>
+<div class="screen active" id="s-chats"><div style="display:flex;gap:8px;margin-bottom:10px"><input id="newChat" placeholder="Friend's username..."><button style="width:90px;margin:0" onclick="startChat()">Chat →</button></div><div id="chatList"></div></div>
+<div class="screen" id="s-chat"><div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><button style="width:40px;margin:0" onclick="show('chats')">←</button><b id="chatTitle" style="color:var(--tx)">Chat</b><button style="width:70px;margin:0 0 0 auto;background:#ef4444" onclick="deleteChat()">Delete</button></div><div id="chatBox" style="min-height:300px"></div></div>
+<div class="screen" id="s-feed"><div id="feedList"></div></div>
+<div class="screen" id="s-notifications"><h3 style="color:var(--tx);margin-bottom:10px">Notifications</h3><div id="notifList"></div></div>
+<div class="screen" id="s-profile"><div style="font-size:50px">👤</div><h2 id="profName" style="color:var(--tx)">User</h2><p id="profEmail" style="color:var(--sub)"></p><p style="color:var(--tx);margin-top:15px">Welcome to Let's Connect! 🎉</p><button onclick="logout()" style="margin-top:20px">LOG OUT</button></div>
+<div class="ci" id="chatInput" style="display:none"><div class="iw"><input id="msgInput" placeholder="Message..."></div><button class="send" onclick="sendMsg()">➤</button></div>
+<div class="nav"><div class="ni active" onclick="show('chats')"><div>💬</div>Chats</div><div class="ni" onclick="show('feed')"><div>🏠</div>Feed</div><div class="ni" onclick="show('notifications')"><div>🔔</div>Alerts</div><div class="ni" onclick="show('profile')"><div>👤</div>Profile</div></div>
+<div class="fab" onclick="startChatKim()">✨</div></div>
+<script>
+const SUPABASE_URL="https://motykzvsyykvmjiycodg.supabase.co";
+const SUPABASE_KEY="sb_publishable_wFlOJsS8BDe2NYFoUTQo_w_JTbvjqRn";
+const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+let isLogin=false,currentUser=null,currentChat="Kim AI",chats={};
+function toggleTheme(){document.body.classList.toggle('dark')}
+function toggleMode(){isLogin=!isLogin;document.getElementById('mainBtn').innerText=isLogin?"LOGIN":"CREATE ACCOUNT";document.getElementById('subtitle').innerText=isLogin?"Welcome back! Login to continue":"Create your account to chat with Kim AI ✨";document.getElementById('toggleLink').innerText=isLogin?"Don't have an account? Create one":"Already have an account? Login";document.getElementById('username').style.display=isLogin?"none":"block";document.getElementById('msg').innerText=""}
+async function handleAuth(){
+const email=document.getElementById('email').value.trim(),password=document.getElementById('password').value,username=document.getElementById('username').value.trim(),msg=document.getElementById('msg'),btn=document.getElementById('mainBtn');
+if(!email||!password){msg.className="error";msg.innerText="Please fill email and password";return}
+if(!isLogin&&!username){msg.className="error";msg.innerText="Please enter username";return}
+btn.disabled=true;btn.innerText="Please wait...";
+try{
+if(isLogin){const{data,error}=await supabaseClient.auth.signInWithPassword({email,password});if(error)throw error;showApp(data.user,username)}
+else{const{data,error}=await supabaseClient.auth.signUp({email,password,options:{data:{username}}});if(error)throw error;if(data.user&&!data.session){msg.className="success";msg.innerText="Account created! Check email, then Login."}else{showApp(data.user,username)}}
+}catch(e){msg.className="error";msg.innerText=e.message}
+btn.disabled=false;btn.innerText=isLogin?"LOGIN":"CREATE ACCOUNT"}
+function showApp(user,username){
+currentUser=user;document.getElementById('authCard').style.display="none";document.getElementById('app').style.display="flex";
+const name=username||user.user_metadata?.username||user.email.split('@')[0];
+document.getElementById('profName').innerText=name;document.getElementById('profEmail').innerText=user.email;document.getElementById('topAv').innerText=name[0].toUpperCase();
+if(!chats["Kim AI"]){chats["Kim AI"]=[{from:"kim",text:"Hi "+name+"! ✨ I'm Kim AI. Ask me anything!"}]}
+renderChats();renderFeed();show('chats')}
+function show(s){
+document.querySelectorAll('.screen').forEach(e=>e.classList.remove('active'));
+document.querySelectorAll('.ni').forEach(e=>e.classList.remove('active'));
+document.getElementById('s-'+s).classList.add('active');
+document.getElementById('chatInput').style.display=(s==='chat')?'flex':'none';
+if(s==='chats')renderChats()}
+function renderChats(){
+let h="";for(let k in chats){let last=chats[k][chats[k].length-1];h+='<div class="item" onclick="openChat(\''+k+'\')"><div class="ava">'+(k==="Kim AI"?"✨":"👤")+'</div><div style="flex:1;text-align:left;overflow:hidden"><b>'+k+'</b><p>'+last.text+'</p></div></div>'}
+document.getElementById('chatList').innerHTML=h||"<p style='color:var(--sub)'>No chats yet. Start one with Kim AI ✨</p>"}
+function startChat(){
+let n=document.getElementById('newChat').value.trim();if(!n){startChatKim();return}
+if(!chats[n])chats[n]=[{from:"kim",text:"Hi! This is "+n}];document.getElementById('newChat').value="";openChat(n)}
+function startChatKim(){if(!chats["Kim AI"])chats["Kim AI"]=[{from:"kim",text:"Hi! I'm Kim AI ✨"}];openChat("Kim AI")}
+function openChat(name){currentChat=name;document.getElementById('chatTitle').innerText=name;renderChat();show('chat')}
+function renderChat(){
+let h="";chats[currentChat].forEach(m=>{h+='<div class="bubble '+(m.from==="me"?"mine":"kims")+'">'+m.text+'</div>'});document.getElementById('chatBox').innerHTML=h}
+function sendMsg(){
+let inp=document.getElementById('msgInput'),t=inp.value.trim();if(!t)return;chats[currentChat].push({from:"me",text:t});inp.value="";renderChat();
+setTimeout(()=>{let reply="Nice! Tell me more 😊";let low=t.toLowerCase();
+if(low.includes("hi")||low.includes("hello"))reply="Hello! 👋 How are you today?";
+else if(low.includes("dls")||low.includes("football")||low.includes("soccer"))reply="DLS is 🔥! Who is your best player? Mine is Kim AI FC 😂";
+else if(low.includes("how are you"))reply="I'm great! Thanks for asking. What are we building today?";
+else if(low.includes("love")||low.includes("like you"))reply="Aww 🥰 You're sweet! Let's Connect forever!";
+else if(low.includes("bye"))reply="Bye! Come back soon ✨";
+chats[currentChat].push({from:"kim",text:reply});renderChat();renderChats()},600)}
+function deleteChat(){
+if(confirm('Delete chat with '+currentChat+'?')){
+delete chats[currentChat];
+if(currentChat==="Kim AI"){chats["Kim AI"]=[{from:"kim",text:"Hi! I'm Kim AI ✨ New chat started!"}]}
+renderChats();show('chats')}}
+function renderFeed(){
+document.getElementById('feedList').innerHTML='<div class="item"><div class="ava">✨</div><div style="text-align:left"><b>Kim AI</b><p>Welcome to Let\'s Connect! Day 6 + 7 Fixed ✅</p></div></div><div class="item"><div class="ava">💬</div><div style="text-align:left"><b>Let\'s Connect Team</b><p>Post your first update! Chat with friends!</p></div></div>';
+document.getElementById('notifList').innerHTML='<div style="padding:12px;background:var(--card);border:1px solid var(--bd);border-radius:12px;color:var(--tx)">✨ Kim AI welcomed you! Tap ✨ to chat.</div>'}
+async function logout(){await supabaseClient.auth.signOut();location.reload()}
+supabaseClient.auth.getSession().then(({data})=>{if(data.session){showApp(data.session.user,"")}});
+document.getElementById('msgInput').addEventListener('keypress',function(e){if(e.key==='Enter')sendMsg()});
+</script></body></html>
